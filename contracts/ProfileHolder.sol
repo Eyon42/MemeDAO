@@ -9,17 +9,21 @@ import {LensHub} from './core/LensHub.sol';
 contract ProfileHolder {
     address lensHubAddress;
     address collectModuleAddress;
-    uint256 public profile_id;
+    uint256 public profile_id = 0; //lens protocol does not mint NFTs with 0, it's used to signify an uninitialized variable.
     string chosenMemeURI;
     uint256 lastPostTime;
     LensHub lensHub;
     uint256 postCooldown;
     string handle;
-    bool created = false;
     address owner;
 
     modifier onlyOwner() {
         require(msg.sender == owner, 'Forbidden');
+        _;
+    }
+
+    modifier onlyOnceCreated() {
+        require(profile_id != 0, 'No profile has been created');
         _;
     }
 
@@ -44,7 +48,7 @@ contract ProfileHolder {
     }
 
     function createProfile() public onlyOwner {
-        require(!created, 'The profile has already been created');
+        require(profile_id == 0, 'The profile has already been created');
         lensHub.createProfile(
             DataTypes.CreateProfileData(
                 address(this),
@@ -56,16 +60,13 @@ contract ProfileHolder {
             )
         );
         profile_id = lensHub.getProfileIdByHandle(handle);
-        created = true;
     }
 
-    function setMeme(string calldata _meme) public onlyOwner {
-        require(created, 'No profile has been created');
+    function setMeme(string calldata _meme) public onlyOwner onlyOnceCreated {
         chosenMemeURI = _meme;
     }
 
-    function postMeme() public onlyMember {
-        require(created, 'No profile has been created');
+    function postMeme() public onlyMember onlyOnceCreated {
         require(
             block.timestamp - lastPostTime > postCooldown,
             'Wait until the post cooldown is reached'
