@@ -15,9 +15,5 @@ task('ph-post', 'creates a profile').setAction(async ({ }, hre) => {
     await profileHolder.postMeme();
     const p_count = await lensHub.getPubCount(pr_id);
 
-
-
-
-
     console.log(await lensHub.getPub(pr_id, p_count));
 });

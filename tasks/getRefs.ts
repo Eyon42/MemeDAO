@@ -26,7 +26,7 @@ task('getRefs', 'Get all references for a pub').setAction(async ({ }, hre) => {
         const [refAuthor, refId] = await twrModule.getReferences(pr_id, p_count, i);
         console.log(`Ref: ${refAuthor}, ${refId}`)
         try {
-            console.log(await lensHub.getContentURI(refAuthor, refId.toNumber() + 1));
+            console.log(await lensHub.getContentURI(refAuthor, refId.toNumber()));
         }
         catch {
             console.log("Publication does not exists")

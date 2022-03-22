@@ -12,7 +12,7 @@ task('deploy-BackRef-module', 'creates a profile').setAction(async ({ }, hre) =>
     const handle = `memedaov${n}`
 
     const twoWayReferenceModule = await deployContract(
-        new TwoWayReferenceModule__factory(user).deploy()
+        new TwoWayReferenceModule__factory(user).deploy(addrs['lensHub proxy'])
     );
 
     await waitForTx(lensHub.whitelistReferenceModule(twoWayReferenceModule.address, true));
