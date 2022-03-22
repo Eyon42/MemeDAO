@@ -15,7 +15,7 @@ task('getRefs', 'Get all references for a pub').setAction(async ({ }, hre) => {
     const profileHolder = ProfileHolder__factory.connect(addrs['ProfileHolder'], user);
     const lensHub = LensHub__factory.connect(addrs['lensHub proxy'], liker);
 
-    const pr_id = (await profileHolder.profile_id()).toNumber();
+    const pr_id = (await profileHolder.profileId()).toNumber();
     const p_count = (await lensHub.getPubCount(pr_id)).toNumber();
     console.log(`OP: ${pr_id}, ${p_count}`)
 

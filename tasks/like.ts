@@ -14,7 +14,7 @@ task('like', 'creates a profile').setAction(async ({ }, hre) => {
     const profileHolder = ProfileHolder__factory.connect(addrs['ProfileHolder'], user);
     const lensHub = LensHub__factory.connect(addrs['lensHub proxy'], liker);
 
-    const pr_id = await profileHolder.profile_id();
+    const pr_id = await profileHolder.profileId();
     const p_count = await lensHub.getPubCount(pr_id);
     console.log(pr_id.toNumber(), p_count.toNumber())
     //const pub = await lensHub.getPub(pr_id, p_count)

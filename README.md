@@ -45,6 +45,9 @@ We can then give the contract a content URI and set it to post the content with:
 #### TwoWayReferenceModule
 The Lens Protocol doesn't have a way to natively get all of the publication that reference a given publication. We implemented this module (and made it easy to incorporate into other modules) for that exact reason. 
 
+#### ReactionsModule
+Based on TwoWayReferenceModule, it adds a function to count comments with a determinated contentURI. This way we can set up a standard for our app where, for example, if the comment has `contentURI="\like"` then that's counted as a like.
+
 ## Notes:
 - The scripts can be found and edited under the `tasks` folder.
 - If finding the previous comand prompt inside the docker bash is too anoying then run this:
@@ -52,5 +55,5 @@ The Lens Protocol doesn't have a way to natively get all of the publication that
 
 ## TO-DOs
 ### Eyon:
-- Think if Reactions should be a library or a module that wraps around the TwoWayReferenceModule
-- Use the Reactions.sol library on the profile holder and test said library.
+- Implement chainlink keeping for periodically posting
+- Do a mock script for chainlink keeping
