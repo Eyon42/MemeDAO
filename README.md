@@ -8,6 +8,9 @@ Project for EthGlobal LFGrow Hackathon.
 ### Basic setup:
 Follow [this](https://docs.lens.dev/docs/quick-setup) for setting up the working environment with docker.
 
+```$ docker-compose up```
+```$ docker-compose exec contracts-env bash```
+
 Once inside the container, compile with:
 
 ```$ npx hardhat compile```
@@ -33,7 +36,7 @@ This gives us the base contract and creates a profile controlled by it.
 
 We can then give the contract a content URI and set it to post the content with:
 
-```$ npx hardhat ph-posts --network localhost```
+```$ npx hardhat ph-post --network localhost```
 
 ## Work Done:
 
@@ -44,3 +47,5 @@ The Lens Protocol doesn't have a way to natively get all of the publication that
 
 ## Notes:
 - The scripts can be found and edited under the `tasks` folder.
+- If finding the previous comand prompt inside the docker bash is too anoying then run this:
+```$ export PS1='\[\e[32m\u\] \[\e[36m\w\] \[\e[33m\]\[\e[1m\]$ \[\e[0m\]```

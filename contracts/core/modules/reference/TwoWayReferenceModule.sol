@@ -14,6 +14,10 @@ contract TwoWayReferenceModule is IReferenceModule {
 
     mapping(uint256 => mapping(uint256 => PubIdTuple[])) basePubToRef;
 
+    constructor(address _lensHubAddres) {
+        lensHub = LensHub(_lensHubAddres); //needed for fetching the referencing publication's id
+    }
+
     /**
      * @notice Initializes data for a given publication being published. This can only be called by the hub.
      * @param profileId The token ID of the profile publishing the publication.
@@ -28,7 +32,6 @@ contract TwoWayReferenceModule is IReferenceModule {
         uint256 pubId,
         bytes calldata data
     ) external returns (bytes memory) {
-        lensHub = LensHub(msg.sender); //needed for fetching the referencing publication's id
         return data;
     }
 
@@ -74,7 +77,7 @@ contract TwoWayReferenceModule is IReferenceModule {
         uint256 profileIdPointed,
         uint256 pubIdPointed
     ) public {
-        uint256 pubId = lensHub.getPubCount(profileId); // Already increased in the Hub
+        uint256 pubId = lensHub.getPubCount(profileId) + 1; // Not yet increased in the Hub
 
         PubIdTuple memory refPubIdTuple = PubIdTuple(profileId, pubId);
         basePubToRef[profileIdPointed][pubIdPointed].push(refPubIdTuple);

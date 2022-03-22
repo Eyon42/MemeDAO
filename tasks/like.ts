@@ -16,22 +16,28 @@ task('like', 'creates a profile').setAction(async ({ }, hre) => {
 
     const pr_id = await profileHolder.profile_id();
     const p_count = await lensHub.getPubCount(pr_id);
-    const pub = await lensHub.getPub(pr_id, p_count)
+    console.log(pr_id.toNumber(), p_count.toNumber())
+    //const pub = await lensHub.getPub(pr_id, p_count)
+
+    const liker_id = await lensHub.getProfileIdByHandle("zer0dot");
+    console.log(`liker id: ${liker_id.toNumber()}`)
 
     const like: CommentDataStruct = {
-        profileId: await lensHub.defaultProfile(liker.address),
+        profileId: liker_id,
         contentURI: "\like",
         profileIdPointed: pr_id,
         pubIdPointed: p_count,
         collectModule: emptyCollectModuleAddr,
-        collectModuleData: "",
+        collectModuleData: [],
         referenceModule: ZERO_ADDRESS,
-        referenceModuleData: "",
+        referenceModuleData: [],
     }
+    console.log("created post template")
 
-    lensHub.comment(like)
+    const tx = await lensHub.comment(like);
+    console.log("posted")
+    const receipt = await tx.wait();
+    console.log(receipt.logs)
 
 
-
-    console.log();
 });

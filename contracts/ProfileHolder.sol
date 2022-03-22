@@ -7,15 +7,20 @@ import {DataTypes} from './libraries/DataTypes.sol';
 import {LensHub} from './core/LensHub.sol';
 
 contract ProfileHolder {
+    LensHub lensHub;
     address lensHubAddress;
     address collectModuleAddress;
+    address referenceModuleAddress;
+    address followModuleAddress;
+
+    address owner;
+
     uint256 public profile_id = 0; //lens protocol does not mint NFTs with 0, it's used to signify an uninitialized variable.
+    string public handle;
+
     string chosenMemeURI;
     uint256 lastPostTime;
-    LensHub lensHub;
     uint256 postCooldown;
-    string handle;
-    address owner;
 
     modifier onlyOwner() {
         require(msg.sender == owner, 'Forbidden');
@@ -35,12 +40,16 @@ contract ProfileHolder {
     constructor(
         address _LensHub,
         address _collectModule,
+        address _referenceModule,
+        address _followModule,
         uint256 _postCooldown,
         string memory _handle
     ) {
         owner = msg.sender;
         lensHubAddress = _LensHub;
         collectModuleAddress = _collectModule;
+        referenceModuleAddress = _referenceModule;
+        followModuleAddress = _followModule;
         lensHub = LensHub(lensHubAddress);
         handle = _handle;
         postCooldown = _postCooldown;
@@ -54,8 +63,8 @@ contract ProfileHolder {
                 address(this),
                 handle,
                 'https://static.wikia.nocookie.net/memes-pedia/images/d/df/Nada.png/revision/latest/scale-to-width-down/797?cb=20201119214705&path-prefix=es', // Not Ipfs :(
-                address(0), // TODO
-                '',
+                followModuleAddress,
+                '', // TODO
                 'https://static.wikia.nocookie.net/memes-pedia/images/d/df/Nada.png/revision/latest/scale-to-width-down/797?cb=20201119214705&path-prefix=es'
             )
         );
@@ -77,10 +86,23 @@ contract ProfileHolder {
                 chosenMemeURI,
                 collectModuleAddress, // collectModule, TODO
                 '', // collectModuleData,
-                address(0), // referenceModule, TODO
+                referenceModuleAddress,
                 '' // referenceModuleData,
             )
         );
         lastPostTime = block.timestamp;
+    }
+
+    // Setting addresses for modules
+    function setCollectModuleAddress(address _newAddress) public onlyOwner {
+        collectModuleAddress = _newAddress;
+    }
+
+    function setFollowModuleAddress(address _newAddress) public onlyOwner {
+        followModuleAddress = _newAddress;
+    }
+
+    function setReferenceModuleAddress(address _newAddress) public onlyOwner {
+        referenceModuleAddress = _newAddress;
     }
 }

@@ -13,7 +13,9 @@ task('deploy-profile-holder', 'creates a profile').setAction(async ({ }, hre) =>
     const handle = `memedaov${n}`
 
     const profileHolder = await deployContract(
-        new ProfileHolder__factory(user).deploy(addrs['lensHub proxy'], addrs['empty collect module'], 0, handle)
+        new ProfileHolder__factory(user).deploy(addrs['lensHub proxy'],
+            addrs['empty collect module'], addrs["TwoWayReferenceModule"],
+            ZERO_ADDRESS, 0, handle)
     );
 
     await waitForTx(lensHub.whitelistProfileCreator(profileHolder.address, true));

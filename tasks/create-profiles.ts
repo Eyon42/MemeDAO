@@ -3,18 +3,7 @@ import { LensHub__factory } from '../typechain-types';
 import { CreateProfileDataStruct } from '../typechain-types/LensHub';
 import { waitForTx, initEnv, getAddrs, ZERO_ADDRESS } from './helpers/utils';
 
-
-task('create-profile', 'creates a profile').setAction(async ({ }, hre) => {
-    const [governance, , user] = await initEnv(hre);
-    const addrs = getAddrs();
-    const accounts = await hre.ethers.getSigners()
-    const lensHub = LensHub__factory.connect(addrs['lensHub proxy'], governance);
-
-    create(lensHub, user, "zer0dot")
-    create(lensHub, accounts[4], "kek")
-});
-
-async function create(lensHub, user, handle) {
+async function create_profile(lensHub, user, handle) {
     await waitForTx(lensHub.whitelistProfileCreator(user.address, true));
 
     const inputStruct: CreateProfileDataStruct = {
@@ -39,3 +28,13 @@ async function create(lensHub, user, handle) {
         )}, user address (should be the same): ${user.address}`
     );
 }
+
+task('create-profiles', 'creates a profile').setAction(async ({ }, hre) => {
+    const [governance, , user] = await initEnv(hre);
+    const addrs = getAddrs();
+    const accounts = await hre.ethers.getSigners()
+    const lensHub = LensHub__factory.connect(addrs['lensHub proxy'], governance);
+
+    await create_profile(lensHub, accounts[4], "zer0dot")
+    await create_profile(lensHub, accounts[5], "kek")
+});
