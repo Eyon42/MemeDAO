@@ -47,7 +47,7 @@ contract TwoWayReferenceModule is IReferenceModule {
         uint256 profileIdPointed,
         uint256 pubIdPointed
     ) external {
-        recordReference(profileId, profileIdPointed, pubIdPointed);
+        _recordReference(profileId, profileIdPointed, pubIdPointed);
     }
 
     /**
@@ -62,7 +62,7 @@ contract TwoWayReferenceModule is IReferenceModule {
         uint256 profileIdPointed,
         uint256 pubIdPointed
     ) external {
-        recordReference(profileId, profileIdPointed, pubIdPointed);
+        _recordReference(profileId, profileIdPointed, pubIdPointed);
     }
 
     /**
@@ -72,11 +72,11 @@ contract TwoWayReferenceModule is IReferenceModule {
      * @param profileIdPointed The profile ID of the profile associated the publication being referenced.
      * @param pubIdPointed The publication ID of the publication being referenced.
      */
-    function recordReference(
+    function _recordReference(
         uint256 profileId,
         uint256 profileIdPointed,
         uint256 pubIdPointed
-    ) public {
+    ) private {
         uint256 pubId = lensHub.getPubCount(profileId) + 1; // Not yet increased in the Hub
 
         PubIdTuple memory refPubIdTuple = PubIdTuple(profileId, pubId);
