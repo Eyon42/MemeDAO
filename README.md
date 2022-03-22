@@ -49,3 +49,8 @@ The Lens Protocol doesn't have a way to natively get all of the publication that
 - The scripts can be found and edited under the `tasks` folder.
 - If finding the previous comand prompt inside the docker bash is too anoying then run this:
 ```$ export PS1='\[\e[32m\u\] \[\e[36m\w\] \[\e[33m\]\[\e[1m\]$ \[\e[0m\]```
+
+## TO-DOs
+### Eyon:
+- Think if Reactions should be a library or a module that wraps around the TwoWayReferenceModule
+- Use the Reactions.sol library on the profile holder and test said library.
