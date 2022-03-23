@@ -55,5 +55,5 @@ Based on TwoWayReferenceModule, it adds a function to count comments with a dete
 
 ## TO-DOs
 ### Eyon:
-- Implement chainlink keeping for periodically posting
-- Do a mock script for chainlink keeping
+- Test whole mechanism
+- Add one comment per person mechanism

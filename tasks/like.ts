@@ -1,43 +1,66 @@
 import { task } from 'hardhat/config';
-import { LensHub__factory, ProfileHolder__factory } from '../typechain-types';
+import { LensHub__factory, ProfileHolder__factory, ReactionsModule__factory } from '../typechain-types';
 import { CommentDataStruct } from '../typechain-types/LensHub';
 import { initEnv, getAddrs, ZERO_ADDRESS } from './helpers/utils';
 
-
-task('like', 'creates a profile').setAction(async ({ }, hre) => {
-    const [governance, , user] = await initEnv(hre);
+async function likePost(likerId, authorId, postId, user) {
     const addrs = getAddrs();
+    const lensHub = LensHub__factory.connect(addrs['lensHub proxy'], user);
     const emptyCollectModuleAddr = addrs['empty collect module'];
-    const accounts = await hre.ethers.getSigners();
-    const liker = accounts[4];
-
-    const profileHolder = ProfileHolder__factory.connect(addrs['ProfileHolder'], user);
-    const lensHub = LensHub__factory.connect(addrs['lensHub proxy'], liker);
-
-    const pr_id = await profileHolder.profileId();
-    const p_count = await lensHub.getPubCount(pr_id);
-    console.log(pr_id.toNumber(), p_count.toNumber())
-    //const pub = await lensHub.getPub(pr_id, p_count)
-
-    const liker_id = await lensHub.getProfileIdByHandle("zer0dot");
-    console.log(`liker id: ${liker_id.toNumber()}`)
-
+    console.log("author, post")
+    console.log(authorId, postId)
+    console.log(await lensHub.getPub(authorId, postId))
     const like: CommentDataStruct = {
-        profileId: liker_id,
-        contentURI: "\like",
-        profileIdPointed: pr_id,
-        pubIdPointed: p_count,
+        profileId: likerId,
+        contentURI: "reactions://like",
+        profileIdPointed: authorId,
+        pubIdPointed: postId,
         collectModule: emptyCollectModuleAddr,
         collectModuleData: [],
         referenceModule: ZERO_ADDRESS,
         referenceModuleData: [],
     }
-    console.log("created post template")
+    await lensHub.comment(like);
+}
 
-    const tx = await lensHub.comment(like);
-    console.log("posted")
-    const receipt = await tx.wait();
-    console.log(receipt.logs)
+task('like', 'creates a profile').setAction(async ({ }, hre) => {
+    const [, , user] = await initEnv(hre);
+    const addrs = getAddrs();
+    const accounts = await hre.ethers.getSigners();
+    const liker = accounts[4];
+
+    const reactionsModule = ReactionsModule__factory.connect(addrs["ReactionsModule"], user);
+    const profileHolder = ProfileHolder__factory.connect(addrs['ProfileHolder'], user);
+    const lensHub = LensHub__factory.connect(addrs['lensHub proxy'], liker);
 
 
+    // Get the post
+    const authorId = await profileHolder.profileId();
+    const postId = await lensHub.getPubCount(authorId);
+
+    // Get the post's comments
+    const nRef = (await reactionsModule.getNumberOfReferences(authorId, postId)).toNumber();
+
+    const authorToMeme = {};
+
+    for (let i = 0; i < nRef; i++) {
+        const [refAuthor, refId] = await reactionsModule.getReferences(authorId, postId, i);
+        authorToMeme[refAuthor.toNumber()] = refId;
+    }
+
+    const liker1Id = await lensHub.getProfileIdByHandle("zer0dot");
+    const liker2Id = await lensHub.getProfileIdByHandle("kek");
+
+    // Have them vote themselves
+
+    await likePost(liker1Id, liker1Id, authorToMeme[liker1Id.toNumber()], accounts[4])
+    await likePost(liker1Id, liker2Id, authorToMeme[liker2Id.toNumber()], accounts[4]) // Here one's cheating, we'll add a third voter later and a voting restriction later TODO
+    await likePost(liker2Id, liker2Id, authorToMeme[liker2Id.toNumber()], accounts[5])
+
+    console.log("Meme votes casted")
+    console.log(await lensHub.getContentURI(liker1Id, authorToMeme[liker1Id.toNumber()]))
+    console.log((await reactionsModule.getNumberOfReactions(liker1Id, authorToMeme[liker1Id.toNumber()], 'reactions://like')).toNumber())
+    console.log(await lensHub.getContentURI(liker2Id, authorToMeme[liker2Id.toNumber()]))
+    console.log((await reactionsModule.getNumberOfReactions(liker2Id, authorToMeme[liker2Id.toNumber()], 'reactions://like')).toNumber())
 });
+

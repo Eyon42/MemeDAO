@@ -18,14 +18,10 @@ async function create_profile(lensHub, user, handle) {
     };
 
     await waitForTx(lensHub.connect(user).createProfile(inputStruct));
-    console.log(`Total supply (should be 1): ${await lensHub.totalSupply()}`);
     console.log(
-        `Profile owner: ${await lensHub.ownerOf(1)}, user address (should be the same): ${user.address}`
-    );
-    console.log(
-        `Profile ID by handle: ${await lensHub.getProfileIdByHandle(
+        `Created profile. Id: ${await lensHub.getProfileIdByHandle(
             handle
-        )}, user address (should be the same): ${user.address}`
+        )}, handle: ${handle}`
     );
 }
 
@@ -37,4 +33,6 @@ task('create-profiles', 'creates a profile').setAction(async ({ }, hre) => {
 
     await create_profile(lensHub, accounts[4], "zer0dot")
     await create_profile(lensHub, accounts[5], "kek")
+
+    console.log(`Profiles created. Total supply: ${await lensHub.totalSupply()}`);
 });

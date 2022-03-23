@@ -18,22 +18,15 @@ task('deploy-profile-holder', 'creates a profile').setAction(async ({ }, hre) =>
             ZERO_ADDRESS, 0, handle)
     );
 
+    console.log("Profile Holder Deployed")
+
     await waitForTx(lensHub.whitelistProfileCreator(profileHolder.address, true));
 
     await profileHolder.createProfile();
-    const pr_id = await profileHolder.profile_id();
+    const pr_id = await profileHolder.profileId();
 
-
-    console.log(`Total supply : ${await lensHub.totalSupply()}`);
-    console.log(
-        `Profile owner: ${await lensHub.ownerOf(pr_id)},
-        user address (should not be the same): ${user.address}`
-    );
-    console.log(
-        `Profile ID by handle: ${await lensHub.getProfileIdByHandle(
-            handle
-        )}`
-    );
+    console.log(`MemeDao Profile created. Id: ${pr_id}`);
+    console.log(`First private post available`)
 
     addrs["ProfileHolder"] = profileHolder.address;
     const json = JSON.stringify(addrs, null, 2);

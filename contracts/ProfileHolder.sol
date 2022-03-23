@@ -17,7 +17,7 @@ contract ProfileHolder {
 
     address owner;
 
-    uint256 public profileId = 0; //lens protocol does not mint NFTs with 0, it's used to signify an uninitialized variable.
+    uint256 public profileId; //lens protocol does not mint NFTs with 0, it's used to signify an uninitialized variable.
     string public handle;
 
     string memeRequestPostURI;
@@ -59,6 +59,7 @@ contract ProfileHolder {
         handle = _handle;
         postCooldown = _postCooldown;
         lastPostTime = 0;
+        profileId = 0;
     }
 
     function createProfile() public onlyOwner {
@@ -85,13 +86,15 @@ contract ProfileHolder {
         uint256 winningMemeRefAuthor = 0;
         uint256 winningMemeRefId = 0;
         uint256 maxLikes = 0;
-
         for (uint256 i = 0; i < nRef; i++) {
             (uint256 refAuthor, uint256 refId) = reactionsModule.getReferences(profileId, pubId, i);
-            uint256 nLikes = reactionsModule.getNumberOfReactions(refAuthor, refId, '\\like');
-
-            // In a tide, first meme wins
-            if (nLikes > maxLikes) {
+            uint256 nLikes = reactionsModule.getNumberOfReactions(
+                refAuthor,
+                refId,
+                'reactions://like'
+            );
+            // In a tide, last meme wins (got more likes in less time)
+            if (nLikes >= maxLikes) {
                 maxLikes = nLikes;
                 winningMemeRefAuthor = refAuthor;
                 winningMemeRefId = refId;

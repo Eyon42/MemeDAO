@@ -5,11 +5,16 @@ import { deployAndAproveModule } from './helpers/postDeployUtils'
 
 
 
-task('deploy-Ref-modules', 'creates a profile').setAction(async ({ }, hre) => {
+task('deploy-modules', 'creates a profile').setAction(async ({ }, hre) => {
     const [governance, , user] = await initEnv(hre);
     const addrs = getAddrs();
+    const lensHub = LensHub__factory.connect(addrs['lensHub proxy'], governance);
+
+    await waitForTx(lensHub.whitelistCollectModule(addrs['empty collect module'], true));
 
     await deployAndAproveModule(TwoWayReferenceModule__factory, user, hre, "TwoWayReferenceModule");
     await deployAndAproveModule(ReactionsModule__factory, user, hre, "ReactionsModule");
+
+    console.log("Modules Deployed");
 
 });
