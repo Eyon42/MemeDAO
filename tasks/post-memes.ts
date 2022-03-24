@@ -17,9 +17,6 @@ task('post-memes', 'Posts memes')
         const authorId = await profileHolder.profileId();
         const postId = await lensHub.getPubCount(authorId);
 
-        console.log(authorId)
-        console.log(postId)
-
         const memer1Id = await lensHub.getProfileIdByHandle("zer0dot")
         const meme1: CommentDataStruct = {
             profileId: memer1Id,

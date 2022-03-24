@@ -1,10 +1,15 @@
 import { task } from 'hardhat/config';
-import { LensHub__factory } from '../typechain-types';
+import { LensHub__factory, Currency__factory } from '../typechain-types';
 import { CreateProfileDataStruct } from '../typechain-types/LensHub';
 import { waitForTx, initEnv, getAddrs, ZERO_ADDRESS } from './helpers/utils';
 
 async function create_profile(lensHub, user, handle) {
     await waitForTx(lensHub.whitelistProfileCreator(user.address, true));
+
+    // Give 'em muny
+    const addrs = getAddrs();
+    const currency = Currency__factory.connect(addrs["currency"], user)
+    currency.mint(user.address, BigInt(1000 * 10 ** 18))
 
     const inputStruct: CreateProfileDataStruct = {
         to: user.address,

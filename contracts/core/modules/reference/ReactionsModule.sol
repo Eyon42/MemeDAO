@@ -6,13 +6,14 @@ import {LensHub} from '../../LensHub.sol';
 import {TwoWayReferenceModule} from './TwoWayReferenceModule.sol';
 
 contract ReactionsModule is TwoWayReferenceModule {
-    constructor(address _lensHubAddres) TwoWayReferenceModule(_lensHubAddres) {}
+    constructor(address hub) TwoWayReferenceModule(hub) {}
 
     function getNumberOfReactions(
         uint256 profileId,
         uint256 pubId,
         string memory _reactionCode
     ) public view returns (uint256) {
+        LensHub lensHub = LensHub(HUB);
         uint256 reactions = 0;
         uint256 nRef = getNumberOfReferences(profileId, pubId);
         for (uint256 i = 0; i < nRef; i++) {

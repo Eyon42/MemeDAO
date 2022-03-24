@@ -3,12 +3,12 @@ import { deployContract, waitForTx, initEnv, getAddrs, ZERO_ADDRESS } from './ut
 import fs from 'fs';
 
 
-export async function deployAndAproveModule(moduleFactory, deployer, hre, moduleName) {
+export async function deployAndAproveModule(moduleFactory, deployer, hre, moduleName, args) {
     const [governance, , user] = await initEnv(hre);
     const addrs = getAddrs();
     const lensHub = LensHub__factory.connect(addrs['lensHub proxy'], governance);
     const Module = await deployContract(
-        new moduleFactory(deployer).deploy(addrs['lensHub proxy'])
+        new moduleFactory(deployer).deploy(addrs['lensHub proxy'], ...args)
     );
 
     await waitForTx(lensHub.whitelistReferenceModule(Module.address, true));

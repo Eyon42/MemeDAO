@@ -10,6 +10,7 @@ import {FollowValidationModuleBase} from '../FollowValidationModuleBase.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
+import {LensHub} from '../../LensHub.sol';
 
 /**
  * @notice A struct containing the necessary data to execute collect actions on a publication.
@@ -19,11 +20,10 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
  * @param currency The currency associated with this publication.
  * @param referralFee The referral fee associated with this publication.
  */
-struct ProfilePublicationData {
-    uint256 amount;
+struct AuctionProfilePublicationData {
     address recipient;
+    address auctioneer;
     address currency;
-    uint16 referralFee;
 }
 
 /**
@@ -35,24 +35,31 @@ struct ProfilePublicationData {
  *
  * This module works by allowing unlimited collects for a publication at a given price.
  */
-contract FeeCollectModule is ICollectModule, FeeModuleBase, FollowValidationModuleBase {
+contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidationModuleBase {
     using SafeERC20 for IERC20;
 
-    mapping(uint256 => mapping(uint256 => ProfilePublicationData))
+    struct Bid {
+        address bidder;
+        uint256 bid;
+    }
+
+    mapping(uint256 => mapping(uint256 => Bid[])) _basePubToBids; // The bidders will remain forever in this smart contract's storage. It's cheaper than trying to delete them.
+    mapping(uint256 => mapping(uint256 => bool)) _isAuctionActive;
+
+    mapping(uint256 => mapping(uint256 => AuctionProfilePublicationData))
         internal _dataByPublicationByProfile;
 
     constructor(address hub, address moduleGlobals) FeeModuleBase(moduleGlobals) ModuleBase(hub) {}
 
     /**
-     * @notice This collect module levies a fee on collects and supports referrals. Thus, we need to decode data.
+     * @notice This collect module creates an auction for collecting a publication.
      *
      * @param profileId The token ID of the profile of the publisher, passed by the hub.
      * @param pubId The publication ID of the newly created publication, passed by the hub.
      * @param data The arbitrary data parameter, decoded into:
-     *      uint256 amount: The currency total amount to levy.
      *      address currency: The currency address, must be internally whitelisted.
      *      address recipient: The custom recipient address to direct earnings to.
-     *      uint16 referralFee: The referral fee to set.
+     *      address auctioneer: The address for the auctioneer.
      *
      * @return An abi encoded bytes parameter, which is the same as the passed data parameter.
      */
@@ -61,21 +68,17 @@ contract FeeCollectModule is ICollectModule, FeeModuleBase, FollowValidationModu
         uint256 pubId,
         bytes calldata data
     ) external override onlyHub returns (bytes memory) {
-        (uint256 amount, address currency, address recipient, uint16 referralFee) = abi.decode(
+        (address currency, address recipient, address auctioneer) = abi.decode(
             data,
-            (uint256, address, address, uint16)
+            (address, address, address)
         );
-        if (
-            !_currencyWhitelisted(currency) ||
-            recipient == address(0) ||
-            referralFee > BPS_MAX ||
-            amount < BPS_MAX
-        ) revert Errors.InitParamsInvalid();
+        if (!_currencyWhitelisted(currency) || recipient == address(0))
+            revert Errors.InitParamsInvalid();
 
-        _dataByPublicationByProfile[profileId][pubId].referralFee = referralFee;
         _dataByPublicationByProfile[profileId][pubId].recipient = recipient;
+        _dataByPublicationByProfile[profileId][pubId].auctioneer = auctioneer;
         _dataByPublicationByProfile[profileId][pubId].currency = currency;
-        _dataByPublicationByProfile[profileId][pubId].amount = amount;
+        _isAuctionActive[profileId][pubId] = true;
 
         return data;
     }
@@ -83,7 +86,9 @@ contract FeeCollectModule is ICollectModule, FeeModuleBase, FollowValidationModu
     /**
      * @dev Processes a collect by:
      *  1. Ensuring the collector is a follower
-     *  2. Charging a fee
+     *  2. Ensuring the auction is still open
+     *  3. Ensuring they have allowed transfer of the bid ammount
+     *  4. Recording the valid bid for the future.
      */
     function processCollect(
         uint256 referrerProfileId,
@@ -92,12 +97,25 @@ contract FeeCollectModule is ICollectModule, FeeModuleBase, FollowValidationModu
         uint256 pubId,
         bytes calldata data
     ) external virtual override onlyHub {
+        require(referrerProfileId == profileId);
+        require(_isAuctionActive[profileId][pubId]);
         _checkFollowValidity(profileId, collector);
-        if (referrerProfileId == profileId) {
-            _processCollect(collector, profileId, pubId, data);
-        } else {
-            _processCollectWithReferral(referrerProfileId, collector, profileId, pubId, data);
-        }
+
+        uint256 bidAmount = abi.decode(data, (uint256));
+
+        address currency = _dataByPublicationByProfile[profileId][pubId].currency;
+        (address treasury, uint16 treasuryFee) = _treasuryData();
+
+        address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
+        uint256 treasuryAmount = (bidAmount * treasuryFee) / BPS_MAX;
+        uint256 adjustedAmount = bidAmount - treasuryAmount;
+
+        // See it they're bluffing
+        require(IERC20(currency).allowance(collector, recipient) >= treasuryAmount);
+        require(IERC20(currency).allowance(collector, treasury) >= adjustedAmount);
+
+        Bid memory bid = Bid(collector, bidAmount);
+        _basePubToBids[profileId][pubId].push(bid);
     }
 
     /**
@@ -112,67 +130,64 @@ contract FeeCollectModule is ICollectModule, FeeModuleBase, FollowValidationModu
     function getPublicationData(uint256 profileId, uint256 pubId)
         external
         view
-        returns (ProfilePublicationData memory)
+        returns (AuctionProfilePublicationData memory)
     {
         return _dataByPublicationByProfile[profileId][pubId];
     }
 
-    function _processCollect(
-        address collector,
-        uint256 profileId,
-        uint256 pubId,
-        bytes calldata data
-    ) internal {
-        uint256 amount = _dataByPublicationByProfile[profileId][pubId].amount;
-        address currency = _dataByPublicationByProfile[profileId][pubId].currency;
-        _validateDataIsExpected(data, currency, amount);
+    /**
+     * @notice Return the current highest bid for a given publication (active or not).
+     *
+     * @param profileId The token ID of the profile mapped to the publication to query.
+     * @param pubId The publication ID of the publication to query.
+     *
+     * @return The current winner's address and his bid.
+     */
+    function getWinningBid(uint256 profileId, uint256 pubId)
+        public
+        view
+        returns (address, uint256)
+    {
+        Bid[] storage bids = _basePubToBids[profileId][pubId];
+        address winner;
+        uint256 winningAmount;
 
-        (address treasury, uint16 treasuryFee) = _treasuryData();
-        address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
-        uint256 treasuryAmount = (amount * treasuryFee) / BPS_MAX;
-        uint256 adjustedAmount = amount - treasuryAmount;
+        for (uint256 i; i > bids.length; i++) {
+            if (bids[i].bid > winningAmount) {
+                winner = bids[i].bidder;
+                winningAmount = bids[i].bid;
+            }
+        }
 
-        IERC20(currency).safeTransferFrom(collector, recipient, adjustedAmount);
-        IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
+        return (winner, winningAmount);
     }
 
-    function _processCollectWithReferral(
-        uint256 referrerProfileId,
-        address collector,
-        uint256 profileId,
-        uint256 pubId,
-        bytes calldata data
-    ) internal {
-        uint256 amount = _dataByPublicationByProfile[profileId][pubId].amount;
+    function isAuctionActive(uint256 profileId, uint256 pubId) public view returns (bool) {
+        return _isAuctionActive[profileId][pubId];
+    }
+
+    /**
+     * @notice Close the auction, determinate the winner and transfer the amount.
+     *
+     * @param profileId The token ID of the profile mapped to the publication with the auction to close.
+     * @param pubId The publication ID of the publication with the auction to close.
+     */
+    function closeAuction(uint256 profileId, uint256 pubId) external {
+        require(msg.sender == _dataByPublicationByProfile[profileId][pubId].auctioneer); // Only the auctioneer
+        require(isAuctionActive(profileId, pubId) == true, 'This auction is no longer active');
+
         address currency = _dataByPublicationByProfile[profileId][pubId].currency;
-        _validateDataIsExpected(data, currency, amount);
-
-        uint256 referralFee = _dataByPublicationByProfile[profileId][pubId].referralFee;
-        address treasury;
-        uint256 treasuryAmount;
-
-        // Avoids stack too deep
-        {
-            uint16 treasuryFee;
-            (treasury, treasuryFee) = _treasuryData();
-            treasuryAmount = (amount * treasuryFee) / BPS_MAX;
-        }
-
-        uint256 adjustedAmount = amount - treasuryAmount;
-
-        if (referralFee != 0) {
-            // The reason we levy the referral fee on the adjusted amount is so that referral fees
-            // don't bypass the treasury fee, in essence referrals pay their fair share to the treasury.
-            uint256 referralAmount = (adjustedAmount * referralFee) / BPS_MAX;
-            adjustedAmount = adjustedAmount - referralAmount;
-
-            address referralRecipient = IERC721(HUB).ownerOf(referrerProfileId);
-
-            IERC20(currency).safeTransferFrom(collector, referralRecipient, referralAmount);
-        }
+        (address treasury, uint16 treasuryFee) = _treasuryData();
         address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
 
-        IERC20(currency).safeTransferFrom(collector, recipient, adjustedAmount);
-        IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
+        (address winner, uint256 winningAmount) = getWinningBid(profileId, pubId);
+
+        if (winner != address(0)) {
+            uint256 treasuryAmount = (winningAmount * treasuryFee) / BPS_MAX;
+            uint256 adjustedAmount = winningAmount - treasuryAmount;
+            IERC20(currency).safeTransferFrom(winner, recipient, adjustedAmount);
+            IERC20(currency).safeTransferFrom(winner, treasury, treasuryAmount);
+        }
+        _isAuctionActive[profileId][pubId] = false;
     }
 }

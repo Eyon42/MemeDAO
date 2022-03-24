@@ -1,11 +1,10 @@
 pragma solidity 0.8.10;
 
-import {IReferenceModule} from '../../../interfaces/IReferenceModule.sol';
 import {ModuleBase} from '../ModuleBase.sol';
 import {LensHub} from '../../LensHub.sol';
 
-contract TwoWayReferenceModule is IReferenceModule {
-    LensHub lensHub;
+contract TwoWayReferenceModule is ModuleBase {
+    constructor(address hub) ModuleBase(hub) {}
 
     struct PubIdTuple {
         uint256 user;
@@ -13,10 +12,6 @@ contract TwoWayReferenceModule is IReferenceModule {
     }
 
     mapping(uint256 => mapping(uint256 => PubIdTuple[])) basePubToRef;
-
-    constructor(address _lensHubAddres) {
-        lensHub = LensHub(_lensHubAddres); //needed for fetching the referencing publication's id
-    }
 
     /**
      * @notice Initializes data for a given publication being published. This can only be called by the hub.
@@ -31,7 +26,7 @@ contract TwoWayReferenceModule is IReferenceModule {
         uint256 profileId,
         uint256 pubId,
         bytes calldata data
-    ) external returns (bytes memory) {
+    ) external onlyHub returns (bytes memory) {
         return data;
     }
 
@@ -46,7 +41,7 @@ contract TwoWayReferenceModule is IReferenceModule {
         uint256 profileId,
         uint256 profileIdPointed,
         uint256 pubIdPointed
-    ) external {
+    ) external onlyHub {
         _recordReference(profileId, profileIdPointed, pubIdPointed);
     }
 
@@ -61,7 +56,7 @@ contract TwoWayReferenceModule is IReferenceModule {
         uint256 profileId,
         uint256 profileIdPointed,
         uint256 pubIdPointed
-    ) external {
+    ) external onlyHub {
         _recordReference(profileId, profileIdPointed, pubIdPointed);
     }
 
@@ -77,6 +72,7 @@ contract TwoWayReferenceModule is IReferenceModule {
         uint256 profileIdPointed,
         uint256 pubIdPointed
     ) private {
+        LensHub lensHub = LensHub(HUB);
         uint256 pubId = lensHub.getPubCount(profileId) + 1; // Not yet increased in the Hub
 
         PubIdTuple memory refPubIdTuple = PubIdTuple(profileId, pubId);

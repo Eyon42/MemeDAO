@@ -3,11 +3,11 @@ import { LensHub__factory, ProfileHolder__factory } from '../typechain-types';
 import { initEnv, getAddrs } from './helpers/utils';
 
 
-task('mock-chainlink-keeper', 'Call periodic functions on ').setAction(async ({ }, hre) => {
+task('mock-chainlink-keeper', 'Call periodic functions on contract').setAction(async ({ }, hre) => {
     const [governance, , user] = await initEnv(hre);
     const addrs = getAddrs();
     const profileHolder = ProfileHolder__factory.connect(addrs['ProfileHolder'], user);
-    
+
     const lensHub = LensHub__factory.connect(addrs['lensHub proxy'], governance);
 
     const upkeepNeeded = await profileHolder.checkUpkeep([]);
