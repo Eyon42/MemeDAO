@@ -63,4 +63,3 @@ task('like', 'creates a profile').setAction(async ({ }, hre) => {
     console.log(await lensHub.getContentURI(liker2Id, authorToMeme[liker2Id.toNumber()]))
     console.log((await reactionsModule.getNumberOfReactions(liker2Id, authorToMeme[liker2Id.toNumber()], 'reactions://like')).toNumber())
 });
-
