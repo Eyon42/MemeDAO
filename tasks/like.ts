@@ -8,8 +8,8 @@ async function likePost(likerId, authorId, postId, user) {
     const lensHub = LensHub__factory.connect(addrs['lensHub proxy'], user);
     const emptyCollectModuleAddr = addrs['empty collect module'];
     console.log("author, post")
-    console.log(authorId, postId)
-    console.log(await lensHub.getPub(authorId, postId))
+    console.log(authorId.toNumber(), postId.toNumber())
+    console.log(await lensHub.getContentURI(authorId, postId))
     const like: CommentDataStruct = {
         profileId: likerId,
         contentURI: "reactions://like",
@@ -53,9 +53,11 @@ task('like', 'creates a profile').setAction(async ({ }, hre) => {
 
     // Have them vote themselves
 
-    await likePost(liker1Id, liker1Id, authorToMeme[liker1Id.toNumber()], accounts[4])
-    await likePost(liker1Id, liker2Id, authorToMeme[liker2Id.toNumber()], accounts[4]) // Here one's cheating, we'll add a third voter later and a voting restriction later TODO
-    await likePost(liker2Id, liker2Id, authorToMeme[liker2Id.toNumber()], accounts[5])
+    await Promise.all([
+        likePost(liker1Id, liker1Id, authorToMeme[liker1Id.toNumber()], accounts[4]),
+        likePost(liker1Id, liker2Id, authorToMeme[liker2Id.toNumber()], accounts[4]), // Here one's cheating, we'll add a third voter later and a voting restriction later TODO
+        likePost(liker2Id, liker2Id, authorToMeme[liker2Id.toNumber()], accounts[5])
+    ])
 
     console.log("Meme votes casted")
     console.log(await lensHub.getContentURI(liker1Id, authorToMeme[liker1Id.toNumber()]))

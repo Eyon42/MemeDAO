@@ -36,8 +36,10 @@ task('create-profiles', 'creates a profile').setAction(async ({ }, hre) => {
     const accounts = await hre.ethers.getSigners()
     const lensHub = LensHub__factory.connect(addrs['lensHub proxy'], governance);
 
-    await create_profile(lensHub, accounts[4], "zer0dot")
-    await create_profile(lensHub, accounts[5], "kek")
+    await Promise.all([
+        create_profile(lensHub, accounts[4], "zer0dot"),
+        create_profile(lensHub, accounts[5], "kek")
+    ])
 
     console.log(`Profiles created. Total supply: ${await lensHub.totalSupply()}`);
 });

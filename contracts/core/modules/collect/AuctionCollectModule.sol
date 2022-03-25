@@ -24,6 +24,7 @@ struct AuctionProfilePublicationData {
     address recipient;
     address auctioneer;
     address currency;
+    bool active;
 }
 
 /**
@@ -44,7 +45,7 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
     }
 
     mapping(uint256 => mapping(uint256 => Bid[])) _basePubToBids; // The bidders will remain forever in this smart contract's storage. It's cheaper than trying to delete them.
-    mapping(uint256 => mapping(uint256 => bool)) _isAuctionActive;
+    //mapping(uint256 => mapping(uint256 => bool)) _isAuctionActive;
 
     mapping(uint256 => mapping(uint256 => AuctionProfilePublicationData))
         internal _dataByPublicationByProfile;
@@ -78,7 +79,7 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         _dataByPublicationByProfile[profileId][pubId].recipient = recipient;
         _dataByPublicationByProfile[profileId][pubId].auctioneer = auctioneer;
         _dataByPublicationByProfile[profileId][pubId].currency = currency;
-        _isAuctionActive[profileId][pubId] = true;
+        _dataByPublicationByProfile[profileId][pubId].active = true;
 
         return data;
     }
@@ -97,8 +98,8 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         uint256 pubId,
         bytes calldata data
     ) external virtual override onlyHub {
-        require(referrerProfileId == profileId);
-        require(_isAuctionActive[profileId][pubId]);
+        require(referrerProfileId == profileId, 'Only the original publication can be collected');
+        require(isAuctionActive(profileId, pubId), 'This auction is no longer active');
         _checkFollowValidity(profileId, collector);
 
         uint256 bidAmount = abi.decode(data, (uint256));
@@ -163,7 +164,7 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
     }
 
     function isAuctionActive(uint256 profileId, uint256 pubId) public view returns (bool) {
-        return _isAuctionActive[profileId][pubId];
+        return _dataByPublicationByProfile[profileId][pubId].active;
     }
 
     /**
@@ -188,6 +189,6 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
             IERC20(currency).safeTransferFrom(winner, recipient, adjustedAmount);
             IERC20(currency).safeTransferFrom(winner, treasury, treasuryAmount);
         }
-        _isAuctionActive[profileId][pubId] = false;
+        _dataByPublicationByProfile[profileId][pubId].active = false;
     }
 }

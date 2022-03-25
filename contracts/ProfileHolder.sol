@@ -6,9 +6,11 @@ pragma solidity ^0.8.0;
 import {DataTypes} from './libraries/DataTypes.sol';
 import {LensHub} from './core/LensHub.sol';
 import {ReactionsModule} from './core/modules/reference/ReactionsModule.sol';
+import {AuctionCollectModule} from './core/modules/collect/AuctionCollectModule.sol';
 
 contract ProfileHolder {
     LensHub lensHub;
+    address currency;
     address lensHubAddress;
     address auctionCollectModuleAddress;
     address emptyCollectModuleAddress;
@@ -42,6 +44,7 @@ contract ProfileHolder {
 
     constructor(
         address _LensHub,
+        address _currency,
         address _auctionCollectModule,
         address _emptyCollectModule,
         address _referenceModule,
@@ -51,6 +54,7 @@ contract ProfileHolder {
     ) {
         owner = msg.sender;
         lensHubAddress = _LensHub;
+        currency = _currency;
         auctionCollectModuleAddress = _auctionCollectModule;
         emptyCollectModuleAddress = _emptyCollectModule;
         referenceModuleAddress = _referenceModule;
@@ -101,7 +105,11 @@ contract ProfileHolder {
             }
         }
 
-        chosenMemeURI = lensHub.getContentURI(winningMemeRefAuthor, winningMemeRefId);
+        if (winningMemeRefAuthor == 0 || winningMemeRefId == 0) {
+            chosenMemeURI = '';
+        } else {
+            chosenMemeURI = lensHub.getContentURI(winningMemeRefAuthor, winningMemeRefId);
+        }
     }
 
     function _postMeme() private onlyOnceCreated {
@@ -109,8 +117,8 @@ contract ProfileHolder {
             DataTypes.PostData(
                 profileId,
                 chosenMemeURI,
-                auctionCollectModuleAddress, // auctionCollectModule, TODO
-                '', // collectModuleData,
+                auctionCollectModuleAddress, // auctionCollectModule
+                abi.encode(currency, address(this), address(this)), // currency, receiver, auctioneer
                 referenceModuleAddress,
                 '' // referenceModuleData,
             )
@@ -145,8 +153,15 @@ contract ProfileHolder {
             block.timestamp - lastPostTime > postCooldown,
             'Wait until the post cooldown is reached'
         );
+        // Close the previous post's auction
+        uint256 pubId = lensHub.getPubCount(profileId) - 1;
+        if (pubId != 0) {
+            AuctionCollectModule(auctionCollectModuleAddress).closeAuction(profileId, pubId);
+        }
         _setMeme();
-        _postMeme();
+        if (keccak256(abi.encode(chosenMemeURI)) != keccak256(abi.encode(''))) {
+            _postMeme(); // We're not posting empty publications
+        }
         _postPrivateMemeRequest();
     }
 
@@ -166,4 +181,6 @@ contract ProfileHolder {
     function setReferenceModuleAddress(address _newAddress) public onlyOwner {
         referenceModuleAddress = _newAddress;
     }
+
+    function withdrawFunds() public onlyOwner {} // TODO
 }

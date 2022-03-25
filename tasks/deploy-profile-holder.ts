@@ -13,8 +13,8 @@ task('deploy-profile-holder', 'creates a profile').setAction(async ({ }, hre) =>
     const handle = `memedaov${n}`
 
     const profileHolder = await deployContract(
-        new ProfileHolder__factory(user).deploy(addrs['lensHub proxy'],
-            addrs['empty collect module'], addrs['empty collect module'], addrs["ReactionsModule"],
+        new ProfileHolder__factory(user).deploy(addrs['lensHub proxy'], addrs["currency"],
+            addrs['AuctionModule'], addrs['empty collect module'], addrs["ReactionsModule"],
             ZERO_ADDRESS, 0, handle)
     );
 

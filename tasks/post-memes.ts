@@ -43,8 +43,10 @@ task('post-memes', 'Posts memes')
             referenceModuleData: [],
         };
 
-        await waitForTx(lensHub.connect(accounts[4]).comment(meme1));
-        await waitForTx(lensHub.connect(accounts[5]).comment(meme2));
+        await Promise.all([
+            waitForTx(lensHub.connect(accounts[4]).comment(meme1)),
+            waitForTx(lensHub.connect(accounts[5]).comment(meme2))
+        ])
 
         console.log(`${await reactionsModule.getNumberOfReferences(authorId, postId)} memes posted`);
     });
