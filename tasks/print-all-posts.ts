@@ -13,10 +13,11 @@ task('print-all-posts', 'creates a profile').setAction(async ({ }, hre) => {
     const pubCount = await lensHub.getPubCount(profileId);
 
     for (let i = 1; i <= pubCount.toNumber(); i++) {
-        console.log("Post:")
+        console.log(`Post: ${i}`)
         console.log(await lensHub.getPub(profileId, i))
         const isAuctionActive = await auction.getPublicationData(profileId, i)
         console.log(`Auction state: ${isAuctionActive}\n`)
     }
-
+    // const accounts = await hre.ethers.getSigners()
+    // console.log(`Owner of ${profileId}: ${await lensHub.ownerOf(profileId)}. Should be ${profileHolder.address}`)
 });

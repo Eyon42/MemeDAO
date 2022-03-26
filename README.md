@@ -55,6 +55,7 @@ Based on TwoWayReferenceModule, it adds a function to count comments with a dete
 
 ## TO-DOs
 ### Eyon:
-- Test whole mechanism
 - Add one comment per person mechanism
 - Add set countdown function
+- Review how the FollowerTier relationship is stored. Current approach is most likely flawed. Should include the FollowNFT.
+- Replace some contracts with interfaces on imports

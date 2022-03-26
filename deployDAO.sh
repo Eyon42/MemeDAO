@@ -12,6 +12,10 @@ npx hardhat like --network localhost
 
 npx hardhat mock-chainlink-keeper --network localhost
 
+# npx hardhat post-memes --network localhost
+
+# npx hardhat like --network localhost
+
 npx hardhat auction --network localhost
 
 npx hardhat mock-chainlink-keeper --network localhost

@@ -86,8 +86,8 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
 
     /**
      * @dev Processes a collect by:
-     *  1. Ensuring the collector is a follower
-     *  2. Ensuring the auction is still open
+     *  1. Ensuring the collector is the winner of the auction
+     *  2. They pay
      *  3. Ensuring they have allowed transfer of the bid ammount
      *  4. Recording the valid bid for the future.
      */
@@ -98,22 +98,35 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         uint256 pubId,
         bytes calldata data
     ) external virtual override onlyHub {
-        require(referrerProfileId == profileId, 'Only the original publication can be collected');
+        //require(referrerProfileId == profileId, 'Only the original publication can be collected');
+        (address winner, ) = getWinningBid(profileId, pubId);
+        require(winner == collector);
+    }
+
+    /**
+     * @dev Register a bet by:
+     *  1. Ensuring the collector is a follower
+     *  2. Ensuring the auction is still open
+     *  3. Ensuring they have allowed transfer of the bid ammount
+     *  4. Recording the valid bid for the future.
+     */
+    function placeBid(
+        uint256 profileId,
+        uint256 pubId,
+        uint256 bidAmount
+    ) external {
+        address collector = msg.sender;
         require(isAuctionActive(profileId, pubId), 'This auction is no longer active');
         _checkFollowValidity(profileId, collector);
-
-        uint256 bidAmount = abi.decode(data, (uint256));
 
         address currency = _dataByPublicationByProfile[profileId][pubId].currency;
         (address treasury, uint16 treasuryFee) = _treasuryData();
 
         address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
-        uint256 treasuryAmount = (bidAmount * treasuryFee) / BPS_MAX;
-        uint256 adjustedAmount = bidAmount - treasuryAmount;
 
         // See it they're bluffing
-        require(IERC20(currency).allowance(collector, recipient) >= treasuryAmount);
-        require(IERC20(currency).allowance(collector, treasury) >= adjustedAmount);
+        require(IERC20(currency).allowance(collector, address(this)) >= bidAmount);
+        require(IERC20(currency).balanceOf(collector) >= bidAmount);
 
         Bid memory bid = Bid(collector, bidAmount);
         _basePubToBids[profileId][pubId].push(bid);
@@ -136,6 +149,19 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         return _dataByPublicationByProfile[profileId][pubId];
     }
 
+    function getBids(
+        uint256 profileId,
+        uint256 pubId,
+        uint256 i
+    ) public view returns (address, uint256) {
+        Bid storage bid = _basePubToBids[profileId][pubId][i];
+        return (bid.bidder, bid.bid);
+    }
+
+    function getNumberOfBids(uint256 profileId, uint256 pubId) public view returns (uint256) {
+        return _basePubToBids[profileId][pubId].length;
+    }
+
     /**
      * @notice Return the current highest bid for a given publication (active or not).
      *
@@ -150,13 +176,23 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         returns (address, uint256)
     {
         Bid[] storage bids = _basePubToBids[profileId][pubId];
+        address currency = _dataByPublicationByProfile[profileId][pubId].currency;
+        (address treasury, uint16 treasuryFee) = _treasuryData();
+        address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
+
         address winner;
         uint256 winningAmount;
 
-        for (uint256 i; i > bids.length; i++) {
+        for (uint256 i; i < bids.length; i++) {
             if (bids[i].bid > winningAmount) {
-                winner = bids[i].bidder;
-                winningAmount = bids[i].bid;
+                if (
+                    // Check that they haven't withdrawn the allowance or spent the funds
+                    IERC20(currency).allowance(bids[i].bidder, address(this)) >= bids[i].bid &&
+                    IERC20(currency).balanceOf(bids[i].bidder) >= bids[i].bid
+                ) {
+                    winner = bids[i].bidder;
+                    winningAmount = bids[i].bid;
+                }
             }
         }
 
@@ -186,6 +222,10 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         if (winner != address(0)) {
             uint256 treasuryAmount = (winningAmount * treasuryFee) / BPS_MAX;
             uint256 adjustedAmount = winningAmount - treasuryAmount;
+
+            // I have no idea why this reverts. I already checked in the same transaction that the people have an allowance
+            // For historic purposes: I figured it out. I was approving the receiver, not the transaction sender.
+            // Had to look a the ERC20 source code to figure it out, took me about 2 days.
             IERC20(currency).safeTransferFrom(winner, recipient, adjustedAmount);
             IERC20(currency).safeTransferFrom(winner, treasury, treasuryAmount);
         }

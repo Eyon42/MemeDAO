@@ -27,7 +27,7 @@ task('auction', 'Simulate the auction').setAction(async ({ }, hre) => {
     const bidder2 = accounts[5]; // "kek"
 
     try {
-        await lensHub.connect(bidder1).collect(profileId, pubId, abi.encode(["uint256"], [BigInt(10 * 10 ** 18)]))
+        await auction.connect(bidder1).placeBid(profileId, pubId, BigInt(10 * 10 ** 18))
     } catch {
         console.log("Bidding without approving currency fails. OK")
     }
@@ -38,19 +38,18 @@ task('auction', 'Simulate the auction').setAction(async ({ }, hre) => {
     ])
 
     await Promise.all([
-        currency.connect(bidder1).approve(profileHolder.address, BigInt(10 * 10 ** 18)),
-        currency.connect(bidder1).approve(treasury.address, BigInt(10 * 10 ** 18)),
-        currency.connect(bidder2).approve(profileHolder.address, BigInt(10 * 10 ** 18)),
-        currency.connect(bidder2).approve(treasury.address, BigInt(10 * 10 ** 18))
+        currency.connect(bidder1).approve(auction.address, BigInt(1000 * 10 ** 18)),
+        // currency.connect(bidder1).approve(treasury.address, BigInt(100 * 10 ** 18)),
+        currency.connect(bidder2).approve(auction.address, BigInt(1000 * 10 ** 18)),
+        // currency.connect(bidder2).approve(treasury.address, BigInt(1000 * 10 ** 18))
     ])
 
     console.log("Payments from bidders approved")
 
     await Promise.all([
-        lensHub.connect(bidder1).collect(profileId, pubId, abi.encode(["uint256"], [BigInt(5 * 10 ** 18)])),
-        lensHub.connect(bidder2).collect(profileId, pubId, abi.encode(["uint256"], [BigInt(10 * 10 ** 18)]))
+        auction.connect(bidder1).placeBid(profileId, pubId, BigInt(5 * 10 ** 18)),
+        auction.connect(bidder2).placeBid(profileId, pubId, BigInt(8 * 10 ** 18))
     ])
 
     console.log("Bids Placed")
-
 });
