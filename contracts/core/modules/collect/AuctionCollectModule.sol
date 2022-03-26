@@ -121,9 +121,6 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         _checkFollowValidity(profileId, collector);
 
         address currency = _dataByPublicationByProfile[profileId][pubId].currency;
-        (address treasury, uint16 treasuryFee) = _treasuryData();
-
-        address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
 
         // See it they're bluffing
         require(IERC20(currency).allowance(collector, address(this)) >= bidAmount);
@@ -178,8 +175,6 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
     {
         Bid[] storage bids = _basePubToBids[profileId][pubId];
         address currency = _dataByPublicationByProfile[profileId][pubId].currency;
-        (address treasury, uint16 treasuryFee) = _treasuryData();
-        address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
 
         address winner;
         uint256 winningAmount;
