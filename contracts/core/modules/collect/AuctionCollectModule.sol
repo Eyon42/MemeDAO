@@ -98,7 +98,8 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         uint256 pubId,
         bytes calldata data
     ) external virtual override onlyHub {
-        //require(referrerProfileId == profileId, 'Only the original publication can be collected');
+        require(referrerProfileId == profileId, 'Only the original publication can be collected');
+        require(isAuctionActive(profileId, pubId) == false, 'This auction is still active');
         (address winner, ) = getWinningBid(profileId, pubId);
         require(winner == collector);
     }

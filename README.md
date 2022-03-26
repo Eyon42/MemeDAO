@@ -54,8 +54,16 @@ Based on TwoWayReferenceModule, it adds a function to count comments with a dete
 ```$ export PS1='\[\e[32m\u\] \[\e[36m\w\] \[\e[33m\]\[\e[1m\]$ \[\e[0m\]```
 
 ## TO-DOs
-### Eyon:
 - Add one comment per person mechanism
-- Add set countdown function
 - Review how the FollowerTier relationship is stored. Current approach is most likely flawed. Should include the FollowNFT.
 - Replace some contracts with interfaces on imports
+
+## To-Learn
+- How to use docker. We ended up just yeeting it, after wastign some time with it.
+- How to properly set up the IDE for Solidity coding. For some reason it only caugths basic syntax error but not type errors or undefined variables or anything more subtle so we wasted a lot of time compiling to see errors.
+- How to properly set up the IDE for Javascript. We had some clashes in the linting for Typescript and React.
+- How to test in hardhat. Tried it quickly, gave up, continued writing everything as tasks
+- More advanced Solidity debugging. I wasn't able to see raised events with hardhat, so I was blind most of the time. Also, a traditional debugger would be awesome.
+- Setting up debugging for hardhat. Tests also gave me some pain
+- Get used to typescript. It's a bit more effort figuring out what type is everything, but it caughts errors without waiting for all of the code to run.
+- 
