@@ -79,3 +79,5 @@ This is a list of thing that we learned that we need to learn or get better at:
 #### Francesco (Eyon42):
 Uff this is a lot. This is my first time writing smart contracts that aren't just tokens based off a template with a few playfull functionalities. I learned to use hardhat, work around typescript(I'll sit down with it after the hackathon), to use the lens protocol which I see very interesting for many of my future projects and that I shouldn't shy away from participating on hackathons.
 
+#### Agnes
+I found it super interesting that in lens, the follower-connection in the social graphs are represented with NFTs. I expected Profiles to be NFTs, and the rest managed else. Coming from a non-dev side, for me the biggest learning was going through the entire documentation with the mindset of identifying what the next building blocks are. I improved a lot in Figma prototyping as well.
