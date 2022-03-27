@@ -32,10 +32,10 @@ task('auction', 'Simulate the auction').setAction(async ({ }, hre) => {
         console.log("Bidding without approving currency fails. OK")
     }
 
-    await Promise.all([
-        lensHub.connect(bidder1).follow([profileId], [[]]),
-        lensHub.connect(bidder2).follow([profileId], [[]])
-    ])
+    // await Promise.all([
+    //     lensHub.connect(bidder1).follow([profileId], [[]]),
+    //     lensHub.connect(bidder2).follow([profileId], [[]])
+    // ])
 
     await Promise.all([
         currency.connect(bidder1).approve(auction.address, BigInt(1000 * 10 ** 18)),

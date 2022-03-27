@@ -1,5 +1,5 @@
 import { task } from 'hardhat/config';
-import { LensHub__factory, TwoWayReferenceModule__factory, ReactionsModule__factory, AuctionCollectModule__factory, ProfileHolder__factory } from '../typechain-types';
+import { LensHub__factory, TwoWayReferenceModule__factory, ReactionsModule__factory, AuctionCollectModule__factory, TwoTierFollowModule__factory } from '../typechain-types';
 import { deployContract, waitForTx, initEnv, getAddrs, ZERO_ADDRESS } from './helpers/utils';
 import { deployAndAproveModule } from './helpers/postDeployUtils'
 
@@ -16,6 +16,7 @@ task('deploy-modules', 'creates a profile').setAction(async ({ }, hre) => {
     await deployAndAproveModule(TwoWayReferenceModule__factory, user, hre, "TwoWayReferenceModule", [], "reference")
     await deployAndAproveModule(ReactionsModule__factory, user, hre, "ReactionsModule", [], "reference")
     await deployAndAproveModule(AuctionCollectModule__factory, user, hre, "AuctionModule", [addrs["module globals"]], "collect")
+    await deployAndAproveModule(TwoTierFollowModule__factory, user, hre, "TwoTierFollowModule", [addrs["module globals"]], "follow")
     console.log("Modules Deployed");
 
 });

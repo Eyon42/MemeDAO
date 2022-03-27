@@ -38,7 +38,7 @@ enum FollowTier {
  * @notice This is a simple Lens FollowModule implementation, inheriting from the IFollowModule interface, but with additional
  * variables that can be controlled by governance, such as the governance & treasury addresses as well as the treasury fee.
  */
-contract FeeFollowModule is IFollowModule, FeeModuleBase, FollowValidatorFollowModuleBase {
+contract TwoTierFollowModule is IFollowModule, FeeModuleBase, FollowValidatorFollowModuleBase {
     using SafeERC20 for IERC20;
 
     mapping(uint256 => ProfileData) internal _dataByProfile;
@@ -96,7 +96,6 @@ contract FeeFollowModule is IFollowModule, FeeModuleBase, FollowValidatorFollowM
 
             uint256 amount = _dataByProfile[profileId].amount;
             address currency = _dataByProfile[profileId].currency;
-            _validateDataIsExpected(data, currency, amount);
 
             (address treasury, uint16 treasuryFee) = _treasuryData();
             address recipient = _dataByProfile[profileId].recipient;
