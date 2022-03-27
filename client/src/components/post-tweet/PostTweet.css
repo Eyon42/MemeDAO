@@ -1,0 +1,17 @@
+.each-card {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.card-post {
+    padding: 1rem;
+}
+
+.post-btn {
+    float: right;
+}
+
+.card-content {
+    padding: 1rem;
+    color: rgb(84 82 82 / 83%);
+}

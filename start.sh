@@ -2,6 +2,7 @@
 
 set -e
 
+# npx hardhat compile
 npm run compile
 
 npm run full-deploy-local

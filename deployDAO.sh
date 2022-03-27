@@ -1,4 +1,5 @@
 #!/bin/bash
+# redeployes all the code, i can add  more fields on the task then I can add 
 
 set -e
 

@@ -3,6 +3,7 @@ import { LensHub__factory, ProfileHolder__factory, ReactionsModule__factory } fr
 import { CommentDataStruct } from '../typechain-types/LensHub';
 import { getAddrs, initEnv, waitForTx, ZERO_ADDRESS } from './helpers/utils';
 
+// post memes as comments 
 task('post-memes', 'Posts memes')
     .setAction(async ({ }, hre) => {
         const [governance, , user] = await initEnv(hre);
