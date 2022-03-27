@@ -28,7 +28,7 @@ You can peek into the previous two bash scripts and copy and paste each command.
 ## Work Done:
 
 ### [Profile Holder Smart contract](https://github.com/Eyon42/MemeDAO/blob/main/contracts/ProfileHolder.sol)
-We made a smart contract that creates and holds a profile. The profile specialized in one thing. Posting a meme request at the beggining of the day, and at the end of the day chose the commented meme with more "likes", then post it and make it available to collect via a 24 hour auction.
+We made a smart contract that creates and holds a profile. The profile is specialized on one thin: posting a meme request at the beggining of the day, and at the end of the day choose the commented meme with more "likes", then post it and make it available to collect via a 24 hour auction.
 
 The whole mechanism of the DAO runs on a 24 hour cycle (can be changed) relying on chainlink keeper for the function calls.
 
@@ -55,8 +55,9 @@ As we thought the modules still need some work to get whitelisted on the testnet
 ### TO-DOs
 - Add one comment per person mechanism
 - Review how the FollowerTier relationship is stored. Current approach is most likely flawed. Should include the FollowNFT.
+- Add check for DAO token for membership.
 - Replace some contracts with interfaces on imports
-- Add check for memebership while commenting request-post.
+- Add check for memebership while making a comment to the request-post.
 - Create mechanism for composing modules
 - Implement onlyMemeber modifier for ProfileHolder.
 - Add option to set membership cost in ProfileHolder
