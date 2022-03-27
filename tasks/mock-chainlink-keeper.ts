@@ -18,35 +18,28 @@ task('mock-chainlink-keeper', 'Call periodic functions on contract').setAction(a
     const accounts = await hre.ethers.getSigners()
 
     // For debugging
-    if (pubId != 0) {
-        console.log(await lensHub.getContentURI(profileId, pubId))
-        const [auctionWinner, winningAmount] = await auction.getWinningBid(profileId, pubId)
-        const bidder2 = accounts[5]
-        const allowance = await currency.allowance(bidder2.address, profileHolder.address)
-        const allowance2 = await currency.allowance(bidder2.address, profileHolder.address)
-        const nBids = await auction.getNumberOfBids(profileId, pubId)
-        console.log(`Number of bids: ${nBids}`)
-        const bids = await Promise.all(
-            [...Array(nBids).keys()].map((i) => (auction.getBids(profileId, pubId, i)))
-        )
-        console.log(`Bids: ${JSON.stringify(bids)}`)
-        console.log(`Winner: ${auctionWinner}(should be ${bidder2.address}) with ${winningAmount}. Allowances: ${allowance} ${allowance2}`)
-    }
+    // if (pubId != 0) {
+    //     console.log(await lensHub.getContentURI(profileId, pubId))
+    //     const [auctionWinner, winningAmount] = await auction.getWinningBid(profileId, pubId)
+    //     const bidder2 = accounts[5]
+    //     const allowance = await currency.allowance(bidder2.address, profileHolder.address)
+    //     const allowance2 = await currency.allowance(bidder2.address, profileHolder.address)
+    //     const nBids = await auction.getNumberOfBids(profileId, pubId)
+    //     console.log(`Number of bids: ${nBids}`)
+    //     const bids = await Promise.all(
+    //         [...Array(nBids).keys()].map((i) => (auction.getBids(profileId, pubId, i)))
+    //     )
+    //     console.log(`Bids: ${JSON.stringify(bids)}`)
+    //     console.log(`Winner: ${auctionWinner}(should be ${bidder2.address}) with ${winningAmount}. Allowances: ${allowance} ${allowance2}`)
+    // }
 
-
+    console.log(`Balance before auction: ${await profileHolder.currencyBalance()}`)
     const upkeepNeeded = await profileHolder.checkUpkeep([]);
     if (upkeepNeeded) {
         await profileHolder.performUpkeep([]);
-        // const tx = await profileHolder.performUpkeep([]);
-        // const txR = await tx.wait()
-        // console.log(txR.events?.map((i) => {
-        //     return {
-        //         from: i?.args?.from?.toString(),
-        //         to: i?.args?.to?.toString(),
-        //         amount: i?.args?.amount?.toString()
-        //     }
-        // }))
+
     }
+    console.log(`Balance after auction: ${await profileHolder.currencyBalance()}`)
 
     const pr_id = await profileHolder.profileId();
     const p_count = await lensHub.getPubCount(pr_id);

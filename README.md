@@ -55,6 +55,11 @@ Allows folowers to include a "member" flag in the call to follow. This charges t
 - Add one comment per person mechanism
 - Review how the FollowerTier relationship is stored. Current approach is most likely flawed. Should include the FollowNFT.
 - Replace some contracts with interfaces on imports
+- Add check for memebership while commenting request-post.
+- Create mechanism for composing modules
+- Implement onlyMemeber modifier for ProfileHolder.
+- Add option to set membership cost in ProfileHolder
+- Proxy the ProfileHolder
 
 ### To-Learn
 - How to use docker. We ended up just yeeting it, after wastign some time with it.

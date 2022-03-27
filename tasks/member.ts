@@ -30,8 +30,12 @@ task('member', 'Simulate the auction').setAction(async ({ }, hre) => {
         currency.connect(bidder2).approve(ttfModule.address, BigInt(1000 * 10 ** 18))
     ])
 
+    console.log(`Balance before members: ${await profileHolder.currencyBalance()}`)
+
     await Promise.all([
         lensHub.connect(bidder1).follow([profileId], [abi.encode(["bool", "uint256"], [true, bidder1Id])]),
         lensHub.connect(bidder2).follow([profileId], [abi.encode(["bool", "uint256"], [true, bidder2Id])])
     ])
+
+    console.log(`Balance after members: ${await profileHolder.currencyBalance()}`)
 });

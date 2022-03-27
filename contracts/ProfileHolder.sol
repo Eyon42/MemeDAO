@@ -188,8 +188,8 @@ contract ProfileHolder {
     }
 
     // Managing balance and withdrawal
-    function currencyBalance() public returns (uint256) {
-        return IERC20(currency).balanceOf(owner);
+    function currencyBalance() public view returns (uint256) {
+        return IERC20(currency).balanceOf(address(this));
     }
 
     function withdrawFunds() external onlyOwner {
