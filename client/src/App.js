@@ -7,30 +7,44 @@ import Profile from './components/profile/Profile';
 import MemeCompetion from './components/meme-competion/MemeCompetion';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import { StylesProvider } from '@material-ui/core';
-import { profileHolder, provider } from './wallet';
+import { profileHolder, provider, lensHub, reactionsModule } from './wallet';
 
+console.log('lensHub', lensHub);
+console.log('reactionsModule', reactionsModule);
 console.log('profileHolder', profileHolder);
-console.log('provider', provider);
 
 const Home = () => {
   const [profileId, setProfileId] = useState('');
   const [signer, setSigner] = useState('');
+  const [handle, setHandle] = useState('');
   console.log(' profileId ', profileId);
   console.log(' signer ', signer);
+  console.log(' handle ***************** ', handle);
 
   useEffect(() => {
     connectWallet();
   }, []);
+
+  const createComment = async () => {
+    // comment((uint256,string,uint256,uint256,address,bytes,address,bytes))
+    // getProfile(uint256 profileId)
+  };
 
   const connectWallet = async () => {
     console.log('🚀 🚀 🚀 🚀 ');
     const pid1 = await profileHolder;
     console.log(' pid =>  ', pid1);
     const pid = (await profileHolder.profileId()).toNumber();
+    const handle = await profileHolder.handle();
     const s = await provider.getSigner();
     console.log(' s ', s);
+
+    const getProfile = await lensHub.getProfile(3);
+    console.log('🚀 🚀🚀🚀 getProfile', getProfile);
+
     setSigner(s);
     setProfileId(pid);
+    setHandle(handle);
   };
 
   return (

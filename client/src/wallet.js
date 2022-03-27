@@ -9,7 +9,9 @@ import profileHolderData from './artifacts/contracts/ProfileHolder.sol/ProfileHo
 export const provider = new ethers.providers.Web3Provider(window.ethereum); // connection to connect to wallet allowedNetworks
 
 export const accounts = provider.send('eth_requestAccounts', []);
+
 export const lensHub = new ethers.Contract(addresses['lensHub proxy'], lensHubData.abi, provider);
+
 export const reactionsModule = new ethers.Contract(
   addresses['ReactionsModule'],
   reactionsModuleData.abi,

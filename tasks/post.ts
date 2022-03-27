@@ -3,6 +3,7 @@ import { LensHub__factory } from '../typechain-types';
 import { PostDataStruct } from '../typechain-types/LensHub';
 import { getAddrs, initEnv, waitForTx, ZERO_ADDRESS } from './helpers/utils';
 
+// create posts
 task('post', 'publishes a post')
     .setAction(async ({ }, hre) => {
         const [governance, , user] = await initEnv(hre);
@@ -22,7 +23,10 @@ task('post', 'publishes a post')
             referenceModuleData: [],
         };
 
+        //  get all post's inputs
         await waitForTx(lensHub.connect(user).post(inputStruct));
+        // createe a function & call it... From line 17 - 28
+
         console.log(await lensHub.getPub(1, 1));
     });
 

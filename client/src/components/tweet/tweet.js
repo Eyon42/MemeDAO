@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
-import { CgMoreAlt } from 'react-icons/cg'
-import { SiGoogleanalytics } from 'react-icons/si'
-import { FiShare } from 'react-icons/fi'
-import { AiOutlineRetweet, AiOutlineHeart, AiFillHeart } from 'react-icons/ai'
-import { FaRegComment } from 'react-icons/fa'
+import React, { useState } from 'react';
+import { CgMoreAlt } from 'react-icons/cg';
+import { SiGoogleanalytics } from 'react-icons/si';
+import { FiShare } from 'react-icons/fi';
+import { AiOutlineRetweet, AiOutlineHeart, AiFillHeart } from 'react-icons/ai';
+import { FaRegComment } from 'react-icons/fa';
 import {
   CardMedia,
   CardContent,
@@ -13,22 +13,21 @@ import {
   CardHeader,
   Avatar,
   Typography,
-} from '@material-ui/core'
+} from '@material-ui/core';
 
-import CircularStatic from '../commons/CircularProgressWithLabel'
-import './tweet.css'
+import CircularStatic from '../commons/CircularProgressWithLabel';
+import './tweet.css';
 
 const Tweet = ({ posts }) => {
-  console.log('🚀 ~ file: tweet.js ~ line 47 ~ Tweet ~ posts', posts)
-  const [like, setLike] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [like, setLike] = useState(false);
+  const [loading, setLoading] = useState(false);
   const likeHandler = () => {
     if (like === false) {
-      setLike(true)
+      setLike(true);
     } else if (like === true) {
-      setLike(false)
+      setLike(false);
     }
-  }
+  };
 
   return (
     <Container>
@@ -56,18 +55,14 @@ const Tweet = ({ posts }) => {
 
                       <CardContent className="card-content">
                         <Typography variant="body2">
-                          This impressive paella is a perfect party dish and a
-                          fun meal to cook together with your guests. Add 1 cup
-                          of frozen peas along with the mussels, if you like.
+                          This impressive paella is a perfect party dish and a fun meal to cook
+                          together with your guests. Add 1 cup of frozen peas along with the
+                          mussels, if you like.
                           {post.description}
                         </Typography>
                         <br />
                         {post.image ? (
-                          <img
-                            src={post.image}
-                            alt="tweets"
-                            style={{ width: '100%' }}
-                          />
+                          <img src={post.image} alt="tweets" style={{ width: '100%' }} />
                         ) : (
                           ' '
                         )}
@@ -90,11 +85,7 @@ const Tweet = ({ posts }) => {
                             className="like"
                             id="nav-icon-box"
                           >
-                            {like === true ? (
-                              <AiFillHeart id="red-heart" />
-                            ) : (
-                              <AiOutlineHeart />
-                            )}
+                            {like === true ? <AiFillHeart id="red-heart" /> : <AiOutlineHeart />}
                           </span>
                           <span id="like-number">
                             {like === true ? parseInt(post.likeNumber) + 1 : 0}
@@ -178,7 +169,7 @@ const Tweet = ({ posts }) => {
         </div>
       </div> */}
     </Container>
-  )
-}
+  );
+};
 
-export default Tweet
+export default Tweet;

@@ -27,3 +27,7 @@ npx hardhat create-profiles --network localhost => `Deploys the protocol`
 
 I deployed=> `./start.sh ` outside and that work
 generates sc deployes them & calls methods
+
+
+most data
+ naybe add more users on create_profile task
