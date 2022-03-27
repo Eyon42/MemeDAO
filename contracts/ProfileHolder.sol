@@ -7,8 +7,12 @@ import {DataTypes} from './libraries/DataTypes.sol';
 import {LensHub} from './core/LensHub.sol';
 import {ReactionsModule} from './core/modules/reference/ReactionsModule.sol';
 import {AuctionCollectModule} from './core/modules/collect/AuctionCollectModule.sol';
+import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 
 contract ProfileHolder {
+    using SafeERC20 for IERC20;
+
     LensHub lensHub;
     address currency;
     address lensHubAddress;
@@ -68,13 +72,14 @@ contract ProfileHolder {
 
     function createProfile() public onlyOwner {
         require(profileId == 0, 'The profile has already been created');
+        uint256 membershipFee = 1e18;
         lensHub.createProfile(
             DataTypes.CreateProfileData(
                 address(this),
                 handle,
                 'https://static.wikia.nocookie.net/memes-pedia/images/d/df/Nada.png/revision/latest/scale-to-width-down/797?cb=20201119214705&path-prefix=es', // Not Ipfs :(
                 followModuleAddress,
-                '', // TODO
+                abi.encode(membershipFee, currency, address(this)),
                 'https://static.wikia.nocookie.net/memes-pedia/images/d/df/Nada.png/revision/latest/scale-to-width-down/797?cb=20201119214705&path-prefix=es'
             )
         );
@@ -182,5 +187,12 @@ contract ProfileHolder {
         referenceModuleAddress = _newAddress;
     }
 
-    function withdrawFunds() public onlyOwner {} // TODO
+    // Managing balance and withdrawal
+    function currencyBalance() public returns (uint256) {
+        return IERC20(currency).balanceOf(owner);
+    }
+
+    function withdrawFunds() external onlyOwner {
+        IERC20(currency).transfer(owner, currencyBalance());
+    } // TODO
 }

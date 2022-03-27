@@ -6,6 +6,8 @@ npx hardhat deploy-modules --network localhost
 
 npx hardhat deploy-profile-holder --network localhost
 
+npx hardhat member --network localhost
+
 npx hardhat post-memes --network localhost
 
 npx hardhat like --network localhost
